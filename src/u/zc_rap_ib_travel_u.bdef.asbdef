@@ -1,0 +1,21 @@
+projection;
+
+define behavior for ZC_RAP_ib_Travel_U alias Travel
+use etag
+{
+  use create;
+  use update;
+  use delete;
+
+  use association _Booking { create; }
+}
+
+define behavior for ZC_RAP_ib_Booking_U alias Booking
+use etag
+{
+//  use create;  //removed because create by association 'association _Booking { create; }' in ZI behavior
+  use update;
+  use delete;
+
+  use association _Travel;
+}

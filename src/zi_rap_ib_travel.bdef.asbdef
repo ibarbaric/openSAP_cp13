@@ -1,0 +1,170 @@
+managed;
+with draft;
+define behavior for ZI_RAP_IB_TRAVEL alias Travel
+implementation in class zbp_i_rap_ib_travel unique
+persistent table zrap_ib_atrav
+draft table zrap_ib_dtrav
+lock master total etag LastChangedAt // draft: detect changes in active instances if durable lock is expired
+authorization master ( instance )
+etag master LocalLastChangedAt
+{
+  create;
+  update;
+  delete;
+  association _Booking { create; with draft; }
+  field ( numbering : managed, readonly ) TravelUUID;
+
+  // static field control
+  field ( readonly) TravelID, TotalPrice, TravelStatus;
+  field ( readonly) LastChangedAt, LastChangedBy, CreatedAt, CreatedBy, LocalLastChangedAt;
+  field ( mandatory ) AgencyID, CustomerID;
+
+  // actions
+  action ( features: instance ) acceptTravel result [1] $self;
+  action ( features: instance ) rejectTravel result [1] $self;
+  internal action recalcTotalPrice;
+  // determinations
+  determination setInitialStatus on modify { create; } //executed when new instance created
+  determination calculateTotalPrice on modify { field BookingFee, CurrencyCode; } //executed when fields change
+  determination calculateTravelID on save { create;}
+  //validations
+  validation validateAgency on save { field AgencyID; create; }
+  validation validateCustomer on save { field CustomerID; create; }
+  validation validateDates on save { field BeginDate, EndDate; create; }
+
+  // validations during 'prepare'
+  draft determine action Prepare  {
+    validation validateAgency;
+    validation validateCustomer;
+    validation validateDates;
+  }
+
+  mapping for zrap_ib_atrav
+  {
+    TravelUUID = travel_uuid;
+    TravelID = travel_id;
+    AgencyID = agency_id;
+    CustomerID = customer_id;
+    BeginDate = begin_date;
+    EndDate = end_date;
+    BookingFee = booking_fee;
+    TotalPrice = total_price;
+    CurrencyCode = currency_code;
+    Description = description;
+    TravelStatus = status;
+    CreatedBy = createdby;
+    CreatedAt = createdat;
+    LastChangedBy = lastchangedby;
+    lastchangedat = lastchangedat;
+    LocalLastChangedAt = local_last_changed_at;
+  }
+
+
+}
+
+
+define behavior for ZI_RAP_IB_Booking alias Booking
+implementation in class zbp_i_rap_ib_booking unique
+persistent table zrap_ib_abook
+draft table zrap_ib_dbook
+lock dependent by _Travel
+authorization dependent by _Travel
+etag master LocalLastChangedAt
+{
+  update;
+  delete;
+  association _Travel { with draft;}
+  field ( numbering : managed, readonly ) BookingUUID;
+  field ( readonly ) TravelUUID, BookingID;
+  field ( readonly) LastChangedBy, CreatedBy, LocalLastChangedAt;
+
+  // determinations
+  determination calculateBookingID on modify { create; }
+  determination calculateTotalPrice on modify { field FlightPrice, CurrencyCode; }
+
+
+  mapping for zrap_ib_abook
+  {
+    BookingUUID = booking_uuid;
+    TravelUUID = travel_uuid;
+    BookingID  = booking_id;
+    CustomerID = customer_id;
+    CarrierID  = carrier_id;
+    ConnectionID = connection_id;
+    FlightDate = flight_date;
+    FlightPrice = flight_price;
+    CurrencyCode = currency_code;
+    CreatedBy = createdby;
+    LastChangedBy = lastchangedby;
+    LocalLastChangedAt = local_last_changed_at;
+  }
+}
+
+
+//--------- Basic, before introducing class: --------------
+//managed; // implementation in class zbp_i_rap_ib_travel unique;
+//
+//define behavior for ZI_RAP_IB_TRAVEL alias Travel
+//persistent table zrap_ib_atrav
+//lock master
+////authorization master ( instance )
+//etag master LocalLastChangedAt
+//{
+//  create;
+//  update;
+//  delete;
+//  association _Booking { create; }
+//  field ( numbering : managed, readonly ) TravelUUID;
+//
+//  mapping for zrap_ib_atrav
+//  {
+//    TravelUUID = travel_uuid;
+//    TravelID = travel_id;
+//    AgencyID = agency_id;
+//    CustomerID = customer_id;
+//    BeginDate = begin_date;
+//    EndDate = end_date;
+//    BookingFee = booking_fee;
+//    TotalPrice = total_price;
+//    CurrencyCode = currency_code;
+//    Description = description;
+//    TravelStatus = status;
+//    CreatedBy = createdby;
+//    CreatedAt = createdat;
+//    LastChangedBy = lastchangedby;
+//    lastchangedat = lastchangedat;
+//    LocalLastChangedAt = local_last_changed_at;
+//  }
+//
+//
+//}
+//
+//
+//define behavior for ZI_RAP_IB_Booking alias Booking
+//persistent table zrap_ib_abook
+//lock dependent by _Travel
+////authorization dependent by <association>
+//etag master LocalLastChangedAt
+//{
+//  update;
+//  delete;
+//  association _Travel;
+//  field ( numbering : managed, readonly ) BookingUUID;
+//  field ( readonly ) TravelUUID;
+//
+//  mapping for zrap_ib_abook
+//  {
+//    BookingUUID = booking_uuid;
+//    TravelUUID = travel_uuid;
+//    BookingID  = booking_id;
+//    CustomerID = customer_id;
+//    CarrierID  = carrier_id;
+//    ConnectionID = connection_id;
+//    FlightDate = flight_date;
+//    FlightPrice = flight_price;
+//    CurrencyCode = currency_code;
+//    CreatedBy = createdby;
+//    LastChangedBy = lastchangedby;
+//    LocalLastChangedAt = local_last_changed_at;
+//  }
+//}
