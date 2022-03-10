@@ -1,2 +1,2 @@
-# openSAP_cp13: : Building Apps with the ABAP RESTful Application Programming Model
+# openSAP_cp13: Building Apps with the ABAP RESTful Application Programming Model
 This is the collection of objects developed for exercise in openSAP training https://open.sap.com/courses/cp13. The exercises were created in SAP's cloud system TRL. The training contains instructions on how to create and activate SAP Cloud Platform Trial account. The process begins here: https://www.sap.com/cmp/td/sap-cloud-platform-trial.html. Step-by-step intructions on exercise reproduction with all code can be found on GitHub: https://github.com/SAP-samples/abap-platform-rap-opensap.
